@@ -11,4 +11,5 @@ Pod::Spec.new do |s|
   s.source   = { :git => 'https://github.com/xslim/TKSenTestAsync.git' }
   s.source_files = '*.{h,m}'
   s.requires_arc = true
+  s.frameworks = 'SenTestingKit'
 end
