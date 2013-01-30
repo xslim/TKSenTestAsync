@@ -8,7 +8,7 @@ SenTest category with Asynchronous support
 * Using `cocoapods`
 
 ``` ruby
-  pod 'TKSenTestAsync', :podspec => 'https://raw.github.com/xslim/TKSenTestAsync/master/TKSenTestAsync.podspec'
+  pod 'TKSenTestAsync'
  ```
 
 ## Usage
