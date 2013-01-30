@@ -2,7 +2,7 @@ Pod::Spec.new do |s|
   s.name     = 'TKSenTestAsync'
   s.version  = '0.0.1'
   s.platform = :ios, '5.0'
-  s.license = 'MIT'
+  s.license  = { :type => 'MIT' }
   s.summary  = 'SenTest category with Asynchronous support.'
   s.homepage = 'https://github.com/xslim/TKSenTestAsync'
   s.authors   = {
