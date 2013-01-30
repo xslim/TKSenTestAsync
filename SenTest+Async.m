@@ -12,7 +12,7 @@ static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
 @implementation SenTest (Async)
 
 - (void)setAsyncSemaphore:(dispatch_semaphore_t)semaphore {
-    objc_setAssociatedObject(self, kSenTestAsyncSemaphore, semaphore, OBJC_ASSOCIATION_ASSIGN);
+    objc_setAssociatedObject(self, kSenTestAsyncSemaphore, (__bridge void *)semaphore, OBJC_ASSOCIATION_ASSIGN);
 }
 
 - (dispatch_semaphore_t)asyncSemaphore {
