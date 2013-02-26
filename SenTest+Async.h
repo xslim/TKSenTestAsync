@@ -8,6 +8,12 @@
 @interface SenTest (Async)
 
 - (void)runTestWithBlock:(void (^)(void))block;
+- (void)runTestWithBlock:(void (^)(void))block timeOut:(NSTimeInterval)timeOut;
 - (void)blockTestCompleted;
 
+@end
+
+
+@interface SenTestCase (Async)
+- (void)asyncFailWithException:(NSException *)anException;
 @end
