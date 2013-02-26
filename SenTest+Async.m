@@ -44,7 +44,7 @@ static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
     while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
         [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
         
-        if ([[timeoutDate laterDate:[NSDate date]] isEqualToDate:timeoutDate]) {
+        if ([(NSDate *)[NSDate date] compare:timeoutDate] == NSOrderedDescending) {
             // Will signal semaphore
             NSException *exception = [NSException exceptionWithName:@"SenTestAsync timeout" reason:@"Operation timed out" userInfo:nil];
             [(SenTestCase *)self asyncFailWithException:exception];
@@ -89,3 +89,4 @@ static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
 
 
 @end
+
