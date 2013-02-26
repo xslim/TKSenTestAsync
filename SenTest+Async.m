@@ -7,6 +7,7 @@
 #import <objc/message.h>
 #import "SenTest+Async.h"
 
+static const NSTimeInterval kDefaultTimeOut = 2.0;
 static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
 
 @implementation SenTest (Async)
@@ -23,18 +24,26 @@ static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
     dispatch_semaphore_signal([self asyncSemaphore]);
 }
 
-
 - (void)runTestWithBlock:(void (^)(void))block {
+    [self runTestWithBlock:block timeOut:kDefaultTimeOut];
+}
+
+- (void)runTestWithBlock:(void (^)(void))block timeOut:(NSTimeInterval)timeOut {
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     [self setAsyncSemaphore:semaphore];
     
     block();
     
-    while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW))
+    NSDate *endDate = [NSDate dateWithTimeIntervalSinceNow:timeOut];
+    while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
         [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:[NSDate dateWithTimeIntervalSinceNow:2]];
-    
-    //dispatch_release(self.semaphore);
+                                 beforeDate:endDate];
+        if ([[[NSDate date] earlierDate:endDate] isEqualToDate:endDate]) {
+            // Will signal semaphore
+            NSException *exception = [NSException exceptionWithName:@"SenTestAsync timeout" reason:@"Operation timed out" userInfo:nil];
+            [(SenTestCase *)self asyncFailWithException:exception];
+        }
+    }
 }
 
 @end
@@ -61,20 +70,16 @@ static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
     }
 }
 
-- (void)asyncFailWithException:(NSException *)anException;
+- (void)asyncFailWithException:(NSException *)anException
 {
-    if ([self asyncSemaphore] == nil) {
-        if (anException != nil) {
-            [self performSelector:@selector(syncFailWithException:) withObject:anException];
-        }
-    } else {
-        [self blockTestCompleted];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (anException != nil) {
-                [self performSelector:@selector(syncFailWithException:) withObject:anException];
-            }
-        });
+    if (anException != nil) {
+        [self performSelectorOnMainThread:@selector(syncFailWithException:) withObject:anException waitUntilDone:YES];
     }
+    
+    if ([self asyncSemaphore] != nil) {
+        [self blockTestCompleted];
+    }
+    
 }
 
 
