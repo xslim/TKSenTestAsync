@@ -28,17 +28,23 @@ static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
     [self runTestWithBlock:block timeOut:kDefaultTimeOut];
 }
 
-- (void)runTestWithBlock:(void (^)(void))block timeOut:(NSTimeInterval)timeOut {
+- (void)runTestWithBlock:(void (^)(void))block timeOut:(NSTimeInterval)timeoutInterval {
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     [self setAsyncSemaphore:semaphore];
     
     block();
     
-    NSDate *endDate = [NSDate dateWithTimeIntervalSinceNow:timeOut];
+    NSDate *timeoutDate = nil;
+    if (timeoutInterval == 0) {
+        timeoutDate = [NSDate distantFuture];
+    } else {
+        timeoutDate = [NSDate dateWithTimeIntervalSinceNow:timeoutInterval];
+    }
+    
     while (dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW)) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
-                                 beforeDate:endDate];
-        if ([[[NSDate date] earlierDate:endDate] isEqualToDate:endDate]) {
+        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+        
+        if ([[timeoutDate laterDate:[NSDate date]] isEqualToDate:timeoutDate]) {
             // Will signal semaphore
             NSException *exception = [NSException exceptionWithName:@"SenTestAsync timeout" reason:@"Operation timed out" userInfo:nil];
             [(SenTestCase *)self asyncFailWithException:exception];
@@ -72,16 +78,14 @@ static const char * kSenTestAsyncSemaphore = "kSenTestAsyncSemaphore";
 
 - (void)asyncFailWithException:(NSException *)anException
 {
-    if (anException != nil) {
-        [self performSelectorOnMainThread:@selector(syncFailWithException:) withObject:anException waitUntilDone:YES];
-    }
-    
     if ([self asyncSemaphore] != nil) {
         [self blockTestCompleted];
     }
-    
+
+    if (anException != nil) {
+        [self performSelectorOnMainThread:@selector(syncFailWithException:) withObject:anException waitUntilDone:YES];
+    }
 }
 
 
 @end
-
