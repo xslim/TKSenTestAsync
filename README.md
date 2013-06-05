@@ -3,6 +3,8 @@ TKSenTestAsync
 
 SenTest category with Asynchronous support
 
+![](http://cocoapod-badges.herokuapp.com/v/TKSenTestAsync/badge.png)
+
 ## Installation
 
 * Using `cocoapods`
